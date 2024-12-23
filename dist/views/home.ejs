@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie Search</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background-color: #1a1a1a;
+            color: #fff;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .search-section {
+            text-align: center;
+            margin: 40px 0;
+            position: relative;
+        }
+
+        .search-input {
+            width: 80%;
+            max-width: 500px;
+            padding: 16px 24px;
+            border: 2px solid #333;
+            border-radius: 16px;
+            font-size: 16px;
+            outline: none;
+            transition: all 0.3s ease;
+            background: #2a2a2a;
+            color: #fff;
+        }
+
+        .search-input:focus {
+            border-color: #4a9eff;
+            box-shadow: 0 0 0 4px rgba(74, 158, 255, 0.2);
+        }
+
+        .search-input::placeholder {
+            color: #666;
+        }
+
+        .movies-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 24px;
+            padding: 20px;
+        }
+
+        .movie-card {
+            background: #2a2a2a;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+
+        .movie-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.3);
+        }
+
+        .movie-poster {
+            width: 100%;
+            height: 330px;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .movie-card:hover .movie-poster {
+            transform: scale(1.05);
+        }
+
+        .movie-info {
+            padding: 20px;
+            background: linear-gradient(180deg, rgba(42,42,42,0.8) 0%, #2a2a2a 100%);
+        }
+
+        .movie-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #fff;
+            line-height: 1.4;
+        }
+
+        .movie-year {
+            color: #999;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            z-index: 1000;
+            backdrop-filter: blur(8px);
+        }
+
+        .modal-content {
+            position: relative;
+            background: #2a2a2a;
+            width: 90%;
+            max-width: 900px;
+            margin: 50px auto;
+            padding: 32px;
+            border-radius: 24px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 24px 48px rgba(0,0,0,0.4);
+        }
+
+        .close-btn {
+            position: absolute;
+            right: 24px;
+            top: 24px;
+            font-size: 28px;
+            cursor: pointer;
+            color: #fff;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+            transition: all 0.2s ease;
+        }
+
+        .close-btn:hover {
+            background: rgba(255,255,255,0.2);
+            transform: rotate(90deg);
+        }
+
+        .movie-detail {
+            display: flex;
+            flex-direction: column;
+            gap: 32px;
+        }
+
+        @media (min-width: 768px) {
+            .movie-detail {
+                flex-direction: row;
+            }
+        }
+
+        .detail-poster {
+            width: 100%;
+            max-width: 300px;
+            height: auto;
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+        }
+
+        .detail-info {
+            flex: 1;
+        }
+
+        .detail-title {
+            font-size: 32px;
+            margin-bottom: 16px;
+            line-height: 1.2;
+            font-weight: 700;
+        }
+
+        .detail-meta {
+            margin-bottom: 24px;
+            color: #999;
+            line-height: 1.8;
+        }
+
+        .detail-meta p {
+            margin-bottom: 8px;
+        }
+
+        .detail-plot {
+            line-height: 1.8;
+            margin-bottom: 24px;
+            color: #ccc;
+        }
+
+        .detail-plot h3 {
+            color: #fff;
+            margin-bottom: 12px;
+            font-size: 20px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            font-size: 18px;
+            color: #999;
+            background: rgba(255,255,255,0.05);
+            border-radius: 16px;
+        }
+
+        @media (max-width: 600px) {
+            .search-input {
+                width: 95%;
+                padding: 14px 20px;
+            }
+
+            .movies-grid {
+                grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+                gap: 16px;
+                padding: 10px;
+            }
+
+            .movie-poster {
+                height: 240px;
+            }
+
+            .modal-content {
+                width: 95%;
+                margin: 20px auto;
+                padding: 20px;
+            }
+
+            .detail-title {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="search-section">
+            <input type="text" class="search-input" placeholder="Search for movies..." id="searchInput">
+        </div>
+        <div id="moviesGrid" class="movies-grid"> 
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="movieModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal()">&times;</span>
+            <div id="movieDetailContent"></div>
+        </div>
+    </div>
+
+    <script>
+        let timeoutId;
+        const searchInput = document.getElementById('searchInput');
+        const moviesGrid = document.getElementById('moviesGrid');
+        const movieModal = document.getElementById('movieModal');
+
+        searchInput.addEventListener('input', (e) => {
+            clearTimeout(timeoutId);
+            timeoutId = setTimeout(() => {
+                const query = e.target.value.trim();
+                if (query.length >= 3) {
+                    searchMovies(query);
+                }
+            }, 500);
+        });
+
+        async function searchMovies(query) {
+            moviesGrid.innerHTML = '<div class="loading">Searching movies...</div>';
+            try {
+                const response = await fetch(`/movies/search?s=${encodeURIComponent(query)}`);
+                const data = await response.json();
+                displayMovies(data.Search || []);
+            } catch (error) {
+                console.log(error)
+                moviesGrid.innerHTML = '<div class="loading">Error fetching movies</div>';
+            }
+        }
+
+        function displayMovies(movies) {
+            if (movies.length === 0) {
+                moviesGrid.innerHTML = '<div class="loading">No movies found</div>';
+                return;
+            }
+
+            moviesGrid.innerHTML = movies.map(movie => `
+                <div class="movie-card" onclick="showMovieDetails('${movie.imdbID}')">
+                    <img src="${movie.Poster !== 'N/A' ? movie.Poster : '/api/placeholder/300/450'}" 
+                         alt="${movie.Title}" 
+                         class="movie-poster">
+                    <div class="movie-info">
+                        <div class="movie-title">${movie.Title}</div>
+                        <div class="movie-year">${movie.Year}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function showMovieDetails(imdbID) {
+            movieModal.style.display = 'block';
+            document.getElementById('movieDetailContent').innerHTML = '<div class="loading">Loading movie details...</div>';
+
+            try {
+                const response = await fetch(`/movies/${imdbID}`);
+                const movie = await response.json();
+                
+                document.getElementById('movieDetailContent').innerHTML = `
+                    <div class="movie-detail">
+                        <img src="${movie.Poster !== 'N/A' ? movie.Poster : '/api/placeholder/300/450'}" 
+                             alt="${movie.Title}" 
+                             class="detail-poster">
+                        <div class="detail-info">
+                            <h2 class="detail-title">${movie.Title}</h2>
+                            <div class="detail-meta">
+                                <p>${movie.Year} | ${movie.Runtime} | ${movie.Genre}</p>
+                                <p>Director: ${movie.Director}</p>
+                                <p>Cast: ${movie.Actors}</p>
+                                <p>Rating: ${movie.imdbRating}/10</p>
+                            </div>
+                            <div class="detail-plot">
+                                <h3>Plot</h3>
+                                <p>${movie.Plot}</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } catch (error) {
+                document.getElementById('movieDetailContent').innerHTML = '<div class="loading">Error loading movie details</div>';
+            }
+        }
+
+        function closeModal() {
+            movieModal.style.display = 'none';
+        }
+
+        window.onclick = function(event) {
+            if (event.target == movieModal) {
+                closeModal();
+            }
+        }
+    </script>
+</body>
+</html>
