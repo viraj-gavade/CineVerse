@@ -60,6 +60,27 @@
             padding: 20px;
         }
 
+        .welcome-message {
+            text-align: center;
+            padding: 60px 20px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 16px;
+            margin: 40px auto;
+            max-width: 600px;
+        }
+
+        .welcome-message h1 {
+            font-size: 28px;
+            margin-bottom: 16px;
+            color: #fff;
+        }
+
+        .welcome-message p {
+            font-size: 18px;
+            color: #999;
+            line-height: 1.6;
+        }
+
         .movie-card {
             background: #2a2a2a;
             border-radius: 16px;
@@ -238,6 +259,14 @@
             .detail-title {
                 font-size: 24px;
             }
+
+            .welcome-message h1 {
+                font-size: 24px;
+            }
+
+            .welcome-message p {
+                font-size: 16px;
+            }
         }
     </style>
 </head>
@@ -247,7 +276,9 @@
             <input type="text" class="search-input" placeholder="Search for movies..." id="searchInput">
         </div>
         <div id="moviesGrid" class="movies-grid"> 
-                </div>
+            <div class="welcome-message">
+                <h1>Welcome to Movie Search</h1>
+                <p>Type in the search box above to discover thousands of movies</p>
             </div>
         </div>
     </div>
@@ -271,6 +302,14 @@
                 const query = e.target.value.trim();
                 if (query.length >= 3) {
                     searchMovies(query);
+                } else if (query.length === 0) {
+                    // Reset to welcome message when search is cleared
+                    moviesGrid.innerHTML = `
+                        <div class="welcome-message">
+                            <h1>Welcome to Movie Search</h1>
+                            <p>Type in the search box above to discover thousands of movies</p>
+                        </div>
+                    `;
                 }
             }, 500);
         });
